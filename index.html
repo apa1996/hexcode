@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hex Color Maker</title>
+<style>
+:root{--bg:#f6f7f9;--panel:#fff;--text:#1b1f27;--muted:#5d6675;--line:#dde1e8;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14171c;--panel:#1d2128;--text:#eef1f5;--muted:#9aa4b2;--line:#323843;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#14171c;--panel:#1d2128;--text:#eef1f5;--muted:#9aa4b2;--line:#323843;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;display:grid;place-items:center;padding:20px}
+.card{width:100%;max-width:460px;background:var(--panel);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.swatch{height:180px;background:#4a90d9;transition:background .1s}
+.body{padding:22px}
+h1{font-size:1.2rem;margin:0 0 18px}
+.row{display:grid;grid-template-columns:22px 1fr 44px;align-items:center;gap:12px;margin-bottom:14px}
+.row b{font-weight:600}
+.row output{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+input[type=range]{width:100%;height:8px;border-radius:4px;appearance:none;-webkit-appearance:none;outline:none}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:3px solid #333;cursor:pointer}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#fff;border:3px solid #333;cursor:pointer}
+input[type=range]:focus-visible{outline:2px solid var(--text);outline-offset:4px}
+#r{background:linear-gradient(90deg,#000,#f00)}
+#g{background:linear-gradient(90deg,#000,#0f0)}
+#b{background:linear-gradient(90deg,#000,#00f)}
+.vals{display:grid;gap:10px;margin-top:20px}
+.val{display:flex;justify-content:space-between;align-items:center;border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.val span{color:var(--muted);font-size:.85rem}
+.val code{font-size:1.05rem;font-family:ui-monospace,Menlo,Consolas,monospace}
+button{font:inherit;border:1px solid var(--line);background:transparent;color:var(--text);border-radius:8px;padding:5px 10px;cursor:pointer}
+button:hover{background:var(--bg)}
+.pick{display:flex;align-items:center;justify-content:space-between;margin-top:16px;color:var(--muted);font-size:.9rem}
+.pick input{width:48px;height:32px;border:none;background:none;padding:0;cursor:pointer}
+</style>
+</head>
+<body>
+<main class="card">
+  <div class="swatch" id="swatch"></div>
+  <div class="body">
+    <h1>Hex color maker</h1>
+    <div class="row"><b>R</b><input type="range" id="r" min="0" max="255" value="74" aria-label="Red level"><output id="rv">74</output></div>
+    <div class="row"><b>G</b><input type="range" id="g" min="0" max="255" value="144" aria-label="Green level"><output id="gv">144</output></div>
+    <div class="row"><b>B</b><input type="range" id="b" min="0" max="255" value="217" aria-label="Blue level"><output id="bv">217</output></div>
+    <div class="vals">
+      <div class="val"><span>Hex</span><code id="hex"></code><button data-copy="hex">Copy</button></div>
+      <div class="val"><span>RGB</span><code id="rgb"></code><button data-copy="rgb">Copy</button></div>
+    </div>
+    <label class="pick">Or pick a color directly <input type="color" id="picker" value="#4a90d9"></label>
+  </div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const sl={r:$('r'),g:$('g'),b:$('b')};
+const h2=n=>Number(n).toString(16).padStart(2,'0').toUpperCase();
+function update(){
+  const r=+sl.r.value,g=+sl.g.value,b=+sl.b.value;
+  const hex='#'+h2(r)+h2(g)+h2(b);
+  $('swatch').style.background=hex;
+  $('rv').textContent=r;$('gv').textContent=g;$('bv').textContent=b;
+  $('hex').textContent=hex;
+  $('rgb').textContent='rgb('+r+', '+g+', '+b+')';
+  $('picker').value=hex.toLowerCase();
+}
+Object.values(sl).forEach(s=>s.addEventListener('input',update));
+$('picker').addEventListener('input',e=>{
+  const v=e.target.value;
+  sl.r.value=parseInt(v.slice(1,3),16);
+  sl.g.value=parseInt(v.slice(3,5),16);
+  sl.b.value=parseInt(v.slice(5,7),16);
+  update();
+});
+document.querySelectorAll('[data-copy]').forEach(btn=>btn.addEventListener('click',async()=>{
+  const t=$(btn.dataset.copy).textContent;
+  try{await navigator.clipboard.writeText(t);btn.textContent='Copied'}catch(e){btn.textContent='Select text'}
+  setTimeout(()=>btn.textContent='Copy',1200);
+}));
+update();
+</script>
+</body>
+</html>
